@@ -4,6 +4,7 @@ from constants import *
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
+from bullets import Shot
 
 def main():
     pygame.init()
@@ -22,6 +23,8 @@ def main():
     AsteroidField.containers = updatable
     asteroid_field = AsteroidField()
 
+    bullets = pygame.sprite.Group()
+    Shot.containers = (bullets, updatable, drawable)
 
 
     while True:
@@ -38,7 +41,7 @@ def main():
         for asteroid in asteroids:
             if asteroid.is_collided(player):
                 sys.exit("Game over!")
-                
+
         pygame.display.flip()
         delta_time = clock.tick(60)
         dt = delta_time / 1000
