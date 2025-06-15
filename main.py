@@ -41,6 +41,11 @@ def main():
         for asteroid in asteroids:
             if asteroid.is_collided(player):
                 sys.exit("Game over!")
+            
+            for bullet in bullets:
+                if asteroid.is_collided(bullet):
+                    bullet.kill()
+                    asteroid.kill()
 
         pygame.display.flip()
         delta_time = clock.tick(60)
