@@ -10,3 +10,6 @@ class Asteroid(CircleShape):
     
     def update(self, dt):
         self.position += self.velocity * dt
+    
+    def is_collided(self, circle):
+        return super().is_collided(circle)

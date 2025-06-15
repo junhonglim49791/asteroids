@@ -1,4 +1,5 @@
 import pygame
+import sys
 from constants import *
 from player import Player
 from asteroid import Asteroid
@@ -34,6 +35,10 @@ def main():
             obj.draw(screen)
         # Doesn't work because Group.draw() in sprite module expects "image" attribute
         # drawable.draw(screen)
+        for asteroid in asteroids:
+            if asteroid.is_collided(player):
+                sys.exit("Game over!")
+                
         pygame.display.flip()
         delta_time = clock.tick(60)
         dt = delta_time / 1000
