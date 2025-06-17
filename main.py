@@ -8,6 +8,7 @@ from bullets import Shot
 
 def main():
     pygame.init()
+    game_over = False
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
     dt = 0
@@ -31,22 +32,38 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
+
        # update current player state before refreshing the screen, for now might have no diff but this is standard practice
         updatable.update(dt)
         screen.fill("black")
-        for obj in drawable:
-            obj.draw(screen)
-        # Doesn't work because Group.draw() in sprite module expects "image" attribute
-        # drawable.draw(screen)
-        for asteroid in asteroids:
-            if asteroid.is_collided(player):
-                sys.exit("Game over!")
-            
-            for bullet in bullets:
-                if asteroid.is_collided(bullet):
-                    bullet.kill()
-                    asteroid.split()
 
+        if not game_over:
+            for obj in drawable:
+                obj.draw(screen)
+            # Doesn't work because Group.draw() in sprite module expects "image" attribute
+            # drawable.draw(screen)
+            for asteroid in asteroids:
+                if asteroid.is_collided(player):
+                    game_over = True
+                    
+                for bullet in bullets:
+                    if asteroid.is_collided(bullet):
+                        bullet.kill()
+                        asteroid.split()
+                        if player.get_player_streak() > 0:
+                            player.set_player_score(player.get_player_streak() + player.get_player_score())
+                        else:
+                            player.set_player_score(player.get_player_score() + 1)
+                        player.set_player_streak(player.get_player_streak() + 1)
+
+                    elif bullet.is_out_of_bounds():
+                        bullet.kill()
+                        player.set_player_streak(0)
+                            
+        else:
+            player.show_highest_score(screen)
+
+        
         pygame.display.flip()
         delta_time = clock.tick(60)
         dt = delta_time / 1000
