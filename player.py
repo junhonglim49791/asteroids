@@ -12,17 +12,28 @@ class Player(CircleShape):
         self.score = 0
         self.streak = 0
         self.life = 3
+        self.invincible = 0
 
     def triangle(self):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
         right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
-        
+
         a = self.position + forward * self.radius
         b = self.position - forward * self.radius - right
         c = self.position - forward * self.radius + right
         
         return [a,b,c]
 
+    def shield_triangle(self):
+        forward = pygame.Vector2(0, 1).rotate(self.rotation)
+        right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
+
+        d = self.position + right
+        e = self.position - right
+        f = self.position - forward * self.radius
+
+        return [d,e,f]
+        
     def draw(self, screen):
         score = pygame.font.Font(None, 36).render(f"Score: {str(self.score)}", True, "white")
         streak = pygame.font.Font(None, 36).render(f"{str(self.streak)}x Combo", True, "white")
@@ -30,11 +41,11 @@ class Player(CircleShape):
         screen.blit(score, (5, 5))
         screen.blit(streak, (5, 40))
         screen.blit(lives, (5, 75))
-        
-        pygame.draw.polygon(screen, color="white", points=self.triangle(), width=2)
 
-
-        
+        pygame.draw.polygon(screen, color="white", points=self.triangle(), width=2)  
+        if self.invincible > 0:
+            pygame.draw.polygon(screen, color="white", points=self.shield_triangle(), width=2)        
+      
 
     def show_highest_score(self, screen):
         highest_score = pygame.font.Font(None, 80).render(f"Nice try! Your Score: {self.score}", True, "white")

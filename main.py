@@ -37,13 +37,15 @@ def main():
         updatable.update(dt)
         screen.fill("black")
 
+        player.invincible -= dt
+
         if not game_over:
             for obj in drawable:
                 obj.draw(screen)
             # Doesn't work because Group.draw() in sprite module expects "image" attribute
             # drawable.draw(screen)
             for asteroid in asteroids:
-                if asteroid.is_collided(player):
+                if asteroid.is_collided(player) and player.invincible < 0:
                     player.life -= 1
                     if player.life < 0:
                         game_over = True
@@ -51,6 +53,8 @@ def main():
                     # Prevent player and asteroid always colliding
                     player.back_to_center()
                     asteroid.kill()
+
+                    player.invincible = 5
 
                 for bullet in bullets:
                     if asteroid.is_collided(bullet):
@@ -65,7 +69,6 @@ def main():
         else:
             player.show_highest_score(screen)
 
-        
         pygame.display.flip()
         delta_time = clock.tick(60)
         dt = delta_time / 1000
