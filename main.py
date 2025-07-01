@@ -44,6 +44,7 @@ def main():
                 obj.draw(screen)
             # Doesn't work because Group.draw() in sprite module expects "image" attribute
             # drawable.draw(screen)
+
             for asteroid in asteroids:
                 if asteroid.is_collided(player) and player.invincible < 0:
                     player.life -= 1
@@ -53,9 +54,12 @@ def main():
                     # Prevent player and asteroid always colliding
                     player.back_to_center()
                     asteroid.kill()
-
+                    
+                    # 5s invincibility after respawn
                     player.invincible = 5
-
+                    
+                asteroid.wrap_around()
+                    
                 for bullet in bullets:
                     if asteroid.is_collided(bullet):
                         bullet.kill()

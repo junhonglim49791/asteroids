@@ -22,6 +22,21 @@ class CircleShape(pygame.sprite.Sprite):
     def is_collided(self, circle):
         return self.position.distance_to(circle.position) <= self.radius + circle.radius
 
+    def wrap_around(self):
+        # To the left part of circle bypass right side screen
+        if self.position.x - self.radius > SCREEN_WIDTH:
+            self.position.x = -self.radius
+
+        # To the right part of circle bypass left side screen
+        if self.position.x + self.radius < 0:
+            self.position.x = SCREEN_WIDTH + self.radius
+
+        if self.position.y + self.radius < 0:
+            self.position.y = SCREEN_HEIGHT + self.radius
+        
+        if self.position.y - self.radius > SCREEN_HEIGHT:
+            self.position.y = -self.radius
+        
     def is_out_of_bounds(self):
         return (
             self.position.x - self.radius > SCREEN_WIDTH or

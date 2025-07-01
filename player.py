@@ -49,7 +49,7 @@ class Player(CircleShape):
 
     def show_highest_score(self, screen):
         highest_score = pygame.font.Font(None, 80).render(f"Nice try! Your Score: {self.score}", True, "white")
-        screen.blit(highest_score, (SCREEN_WIDTH/3.5, SCREEN_HEIGHT/3))
+        screen.blit(highest_score, (SCREEN_WIDTH/4, SCREEN_HEIGHT/3))
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
@@ -73,7 +73,9 @@ class Player(CircleShape):
             self.shoot(dt)
     
     def move(self, dt):
+        # +ve rotate clockwise, vice versa
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
+        # += forward works, but doesn't make it frame independent
         self.position += forward * PLAYER_SPEED * dt
 
     def back_to_center(self):
