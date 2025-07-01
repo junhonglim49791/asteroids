@@ -44,22 +44,24 @@ def main():
             # drawable.draw(screen)
             for asteroid in asteroids:
                 if asteroid.is_collided(player):
-                    game_over = True
+                    player.life -= 1
+                    if player.life < 0:
+                        game_over = True
                     
+                    # Prevent player and asteroid always colliding
+                    player.back_to_center()
+                    asteroid.kill()
+
                 for bullet in bullets:
                     if asteroid.is_collided(bullet):
                         bullet.kill()
                         asteroid.split()
-                        if player.get_player_streak() > 0:
-                            player.set_player_score(player.get_player_streak() + player.get_player_score())
-                        else:
-                            player.set_player_score(player.get_player_score() + 1)
-                        player.set_player_streak(player.get_player_streak() + 1)
+                        player.score = max(player.score + 1, player.streak + player.score)
+                        player.streak += 1
 
                     elif bullet.is_out_of_bounds():
                         bullet.kill()
-                        player.set_player_streak(0)
-                            
+                        player.streak = 0           
         else:
             player.show_highest_score(screen)
 

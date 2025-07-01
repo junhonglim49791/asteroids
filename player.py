@@ -11,6 +11,7 @@ class Player(CircleShape):
         self.shoot_cooldown = 0
         self.score = 0
         self.streak = 0
+        self.life = 3
 
     def triangle(self):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -22,33 +23,22 @@ class Player(CircleShape):
         
         return [a,b,c]
 
-    def set_font_score(self):
-        return pygame.font.Font(None, 36).render(f"Score: {str(self.score)}", True, "white")
-
-    def set_font_streak(self):
-        return pygame.font.Font(None, 36).render(f"{str(self.streak)}x Combo", True, "white")
-
     def draw(self, screen):
+        score = pygame.font.Font(None, 36).render(f"Score: {str(self.score)}", True, "white")
+        streak = pygame.font.Font(None, 36).render(f"{str(self.streak)}x Combo", True, "white")
+        lives = pygame.font.Font(None, 36).render(f"{str(self.life)} Live(s)", True, "white")
+        screen.blit(score, (5, 5))
+        screen.blit(streak, (5, 40))
+        screen.blit(lives, (5, 75))
+        
         pygame.draw.polygon(screen, color="white", points=self.triangle(), width=2)
-        screen.blit(self.set_font_score(), (5, 5))
-        screen.blit(self.set_font_streak(), (5, 40))
 
-    def show_highest_score(self,screen):
+
+        
+
+    def show_highest_score(self, screen):
         highest_score = pygame.font.Font(None, 80).render(f"Nice try! Your Score: {self.score}", True, "white")
         screen.blit(highest_score, (SCREEN_WIDTH/3.5, SCREEN_HEIGHT/3))
-
-
-    def get_player_score(self):
-        return self.score
-    
-    def set_player_score(self, score):
-        self.score = score
-
-    def set_player_streak(self, streak):
-        self.streak = streak
-
-    def get_player_streak(self):
-        return self.streak
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
@@ -74,6 +64,9 @@ class Player(CircleShape):
     def move(self, dt):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
         self.position += forward * PLAYER_SPEED * dt
+
+    def back_to_center(self):
+        self.position = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
         
     def shoot(self, dt):
         self.shoot_cooldown -= dt
