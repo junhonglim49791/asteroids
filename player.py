@@ -22,17 +22,14 @@ class Player(CircleShape):
         b = self.position - forward * self.radius - right
         c = self.position - forward * self.radius + right
         
-        return [a,b,c]
+        # Draw inner triangle after respawn
+        if self.invincible > 0:
+            d = self.position + right
+            e = self.position - right
+            f = self.position - forward * self.radius   
+            return [[a, b, c], [d, e, f]]  
 
-    def shield_triangle(self):
-        forward = pygame.Vector2(0, 1).rotate(self.rotation)
-        right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
-
-        d = self.position + right
-        e = self.position - right
-        f = self.position - forward * self.radius
-
-        return [d,e,f]
+        return [[a,b,c]]
         
     def draw(self, screen):
         score = pygame.font.Font(None, 36).render(f"Score: {str(self.score)}", True, "white")
@@ -41,10 +38,12 @@ class Player(CircleShape):
         screen.blit(score, (5, 5))
         screen.blit(streak, (5, 40))
         screen.blit(lives, (5, 75))
-
-        pygame.draw.polygon(screen, color="white", points=self.triangle(), width=2)  
+        
+        # Check real shape and triangle shape difference
+        # pygame.draw.circle(screen, color="white", center=self.position, radius=self.radius, width=2)
+        pygame.draw.polygon(screen, color="white", points=self.triangle()[0], width=2)  
         if self.invincible > 0:
-            pygame.draw.polygon(screen, color="white", points=self.shield_triangle(), width=2)        
+            pygame.draw.polygon(screen, color="white", points=self.triangle()[1], width=2)        
       
 
     def show_highest_score(self, screen):

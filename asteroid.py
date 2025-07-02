@@ -6,7 +6,7 @@ from constants import ASTEROID_MIN_RADIUS
 class Asteroid(CircleShape):
     def __init__(self, x, y, radius, choice):
         super().__init__(x, y, radius)
-        # randomize radius cannot be too small or too big, hit bos will be confusing
+        # randomize radius cannot be too small or too big, hit box will be confusing
         self.asteroid_styles = [
             [random.uniform(self.radius * 0.8, self.radius * 1) if i % 3 != 2 else random.uniform(self.radius * 0.5, self.radius * 0.7) for i in range(0,10)],
             [random.uniform(self.radius * 0.8, self.radius * 1) if i % 4 != 3 else random.uniform(self.radius * 0.5, self.radius * 0.7) for i in range(0,10)],
