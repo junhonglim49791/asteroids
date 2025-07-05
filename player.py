@@ -1,6 +1,6 @@
 import pygame
 from circleshape import CircleShape
-from constants import PLAYER_RADIUS, PLAYER_TURN_SPEED, PLAYER_SPEED, PLAYER_SHOOT_SPEED, SHOT_RADIUS, SCREEN_WIDTH, SCREEN_HEIGHT
+from constants import *
 from bullets import Shot
 import math
 
@@ -32,9 +32,10 @@ class PowerUp(CircleShape):
             pygame.draw.circle(screen, color="white", center=rotated_position, radius=2, width=2)
 
             power_type = pygame.font.Font(None, 40).render(self.p_type[0].upper(), True, "white")
-            if not self.with_player:
-                if self.p_type == "shield":
-                    screen.blit(power_type, (self.position.x - 10, self.position.y - 10))
+            if not self.with_player and self.p_type == "shield":
+                screen.blit(power_type, (self.position.x - 10, self.position.y - 10))
+            if self.p_type == "laser":
+                screen.blit(power_type, (self.position.x - 10, self.position.y - 10))
 
     def update(self, dt):
         self.rotation_angle += 30*dt
@@ -53,6 +54,9 @@ class Player(CircleShape):
         self.invincible = 0
         self.shield = None
         self.shield_combo_streak = 0
+        self.laser_combo_streak = 0
+        self.laser_power_up = False
+        self.laser_timer = 0
 
     def triangle(self):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -75,11 +79,14 @@ class Player(CircleShape):
         score = pygame.font.Font(None, 36).render(f"Score: {str(self.score)}", True, "white")
         streak = pygame.font.Font(None, 36).render(f"{str(self.streak)}x Combo", True, "white")
         lives = pygame.font.Font(None, 36).render(f"{str(self.life)} Live(s)", True, "white")
-        shield_combo = pygame.font.Font(None, 36).render(f"Shield {str(self.shield_combo_streak)}/3", True, "white")
+        shield_combo = pygame.font.Font(None, 36).render(f"Shield {str(self.shield_combo_streak)}/{SHIELD_TRIGGER_COMBO}", True, "white")
+        laser_combo = pygame.font.Font(None, 36).render(f"Laser {str(self.laser_combo_streak)}/{LASER_TRIGGER_COMBO}", True, "white")
         screen.blit(score, (5, 5))
         screen.blit(streak, (5, 40))
         screen.blit(lives, (5, 75))
         screen.blit(shield_combo, (5, 110))
+        screen.blit(laser_combo, (5, 145))
+
 
         # self.shield.draw(screen)
 
@@ -95,6 +102,10 @@ class Player(CircleShape):
     def show_highest_score(self, screen):
         highest_score = pygame.font.Font(None, 80).render(f"Nice try! Your Score: {self.score}", True, "white")
         screen.blit(highest_score, (SCREEN_WIDTH/6, SCREEN_HEIGHT/3))
+        new_game = pygame.font.Font(None, 80).render(f"Press 'E' to restart", True, "white")
+        screen.blit(new_game, (SCREEN_WIDTH/6, SCREEN_HEIGHT/2))
+
+
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
@@ -134,7 +145,7 @@ class Player(CircleShape):
     def shoot(self, dt):
         self.shoot_cooldown -= dt
 
-        if(self.shoot_cooldown > 0):
+        if(self.shoot_cooldown > 0 and not self.laser_power_up):
             return
             
         bullet = Shot(self.position[0], self.position.y, SHOT_RADIUS)

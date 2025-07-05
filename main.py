@@ -22,7 +22,6 @@ def main():
     PowerUp.containers = (updatable, drawable)
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
-
     asteroids = pygame.sprite.Group()
     Asteroid.containers = (asteroids, updatable, drawable)
     
@@ -34,9 +33,33 @@ def main():
 
     # Game logic variables
     game_over = False
-    shield = None
-    laser = None
-
+    # shield = None
+    # laser = None
+    game_powerups = {
+        "shield": None,
+        "laser": None
+    }
+    
+    # PowerUps dict
+    powerup_defs = {
+        "shield":{
+            "streak_name": "shield_combo_streak",
+            "trigger_combo": SHIELD_TRIGGER_COMBO,
+            "game_attr": "shield",
+            "player_attr": "shield",
+            "player_timer": "invincible",
+            "timer_default": SHIELD_TIMER
+        },
+        "laser":{
+            "streak_name": "laser_combo_streak",
+            "trigger_combo": LASER_TRIGGER_COMBO,
+            "game_attr": "laser",
+            "player_attr": "laser_power_up",
+            "player_timer": "laser_timer",
+            "timer_default": LASER_TIMER
+        }
+    }
+        
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -47,6 +70,7 @@ def main():
         screen.fill("black")
 
         player.invincible -= dt
+        player.laser_timer -= dt
 
         if not game_over:
             for obj in drawable:
@@ -57,23 +81,63 @@ def main():
             # Awards shield power up for player accuracy. 
             # shield is None prevent more than 1 shield in game but doesnt prevent shield to be generated when player in shield power up
             # player.shield is None make sure no shield can be generated when player reach shield combo streak during shield power up
-            if player.shield_combo_streak == 3 and shield is None and player.shield is None:
-                x = random.randint(SHIELD_RADIUS, SCREEN_WIDTH - SHIELD_RADIUS)
-                y = random.randint(SHIELD_RADIUS, SCREEN_HEIGHT - SHIELD_RADIUS)
-                shield = PowerUp(x, y, SHIELD_RADIUS, "shield")
-                player.shield_combo_streak = 0
+            # if player.shield_combo_streak == 3 and shield is None and player.shield is None:
+            #     x = random.randint(SHIELD_RADIUS, SCREEN_WIDTH - SHIELD_RADIUS)
+            #     y = random.randint(SHIELD_RADIUS, SCREEN_HEIGHT - SHIELD_RADIUS)
+            #     shield = PowerUp(x, y, SHIELD_RADIUS, "shield")
+            #     player.shield_combo_streak = 0
+
+            # # Laser power up
+            # if player.laser_combo_streak == 6 and laser is None and not player.laser_power_up:
+            #     x = random.randint(SHIELD_RADIUS, SCREEN_WIDTH - SHIELD_RADIUS)
+            #     y = random.randint(SHIELD_RADIUS, SCREEN_HEIGHT - SHIELD_RADIUS)
+            #     laser = PowerUp(x, y, SHIELD_RADIUS, "laser")
+            #     player.laser_combo_streak = 0
+
+            # # Check whether player gets the game shield. If so, remove game shield and player now has a shield
+            # if shield and shield.is_collided(player):
+            #     shield.kill()
+            #     shield = None
+            #     player.shield = PowerUp(player.position.x, player.position.y, SHIELD_RADIUS, "shield", True)
+            #     player.invincible = 5
             
-            # Check whether player gets the game shield. If so, remove game shield and player now has a shield
-            if shield and shield.is_collided(player):
-                shield.kill()
-                shield = None
-                player.shield = PowerUp(player.position.x, player.position.y, SHIELD_RADIUS, "shield", True)
-                player.invincible = 5
-            
-            # Remove player shield when timer expires
-            if player.invincible < 0 and player.shield is not None:
-                player.shield.kill()
-                player.shield = None
+            # if laser and laser.is_collided(player):
+            #     laser.kill()
+            #     laser = None
+            #     player.laser_power_up = True
+            #     player.laser_timer = 10
+
+            # # Remove player shield when timer expires
+            # if player.invincible < 0 and player.shield is not None:
+            #     player.shield.kill()
+            #     player.shield = None
+
+            # if player.laser_timer < 0 and player.laser_power_up:
+            #     player.laser_power_up = False
+
+            for ptype, cfg in powerup_defs.items():
+                if getattr(player, cfg["streak_name"]) == cfg["trigger_combo"] and game_powerups[cfg["game_attr"]] is None and not getattr(player, cfg["player_attr"]):
+                        x = random.randint(SHIELD_RADIUS, SCREEN_WIDTH - SHIELD_RADIUS)
+                        y = random.randint(SHIELD_RADIUS, SCREEN_HEIGHT - SHIELD_RADIUS)
+                        game_powerups[cfg["game_attr"]] = PowerUp(x, y, SHIELD_RADIUS, ptype)
+                        setattr(player, cfg["streak_name"], 0)
+
+                if game_powerups[cfg["game_attr"]] and game_powerups[cfg["game_attr"]].is_collided(player):
+                    game_powerups[cfg["game_attr"]].kill()
+                    game_powerups[cfg["game_attr"]] = None
+                    if ptype == "shield":
+                        setattr(player, cfg["player_attr"], PowerUp(player.position.x, player.position.y, SHIELD_RADIUS, ptype, True))
+                        setattr(player, cfg["player_timer"], cfg["timer_default"])
+                    elif ptype == "laser":
+                        setattr(player, cfg["player_attr"], True)
+                        setattr(player, cfg["player_timer"], cfg["timer_default"])
+
+                if getattr(player, cfg["player_timer"]) < 0 and getattr(player, cfg["player_attr"]):
+                    if ptype == "shield":
+                        getattr(player, cfg["player_attr"]).kill()
+                        setattr(player, cfg["player_attr"], None)
+                    elif ptype == "laser":  
+                        setattr(player, cfg["player_attr"], False)
 
             for asteroid in asteroids:
                 asteroid.wrap_around()
@@ -92,6 +156,7 @@ def main():
 
                     player.streak = 0 
                     player.shield_combo_streak = 0
+                    player.laser_combo_streak = 0
 
                 # Shield power up kill asteroids like bullets
                 if player.shield is not None and asteroid.is_collided(player.shield):
@@ -105,14 +170,38 @@ def main():
                         asteroid.split()
                         player.score = max(player.score + 1, player.streak + player.score)
                         player.streak += 1
-                        if player.shield_combo_streak < 3:
+                        if player.shield_combo_streak < SHIELD_TRIGGER_COMBO:
                             player.shield_combo_streak += 1
+                        if player.laser_combo_streak < LASER_TRIGGER_COMBO:
+                            player.laser_combo_streak += 1
                     elif bullet.is_out_of_bounds():
                         bullet.kill()
                         player.streak = 0 
-                        player.shield_combo_streak = 0          
+                        player.shield_combo_streak = 0 
+                        player.laser_combo_streak = 0         
         else:           
             player.show_highest_score(screen)
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_e]:
+                player.kill()
+                # Using empty() need to reassign updatable and drawable again
+                # asteroids.empty()
+                # updatable.empty()
+                # drawable.empty()
+                for asteroid in asteroids:
+                    asteroid.kill()
+                for bullet in bullets:
+                    bullet.kill()
+                if game_powerups["shield"]:
+                    game_powerups["shield"].kill()
+                if game_powerups["laser"]:
+                    game_powerups["laser"].kill()
+                game_powerups["shield"] = None
+                game_powerups["laser"] = None
+                player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+                game_over = False
+
+
 
         pygame.display.flip()
         delta_time = clock.tick(60)
