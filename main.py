@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 from constants import *
-from player import Player, Shield
+from player import Player, PowerUp
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from bullets import Shot
@@ -19,7 +19,7 @@ def main():
     drawable = pygame.sprite.Group()
     Player.containers = (updatable, drawable)
     # Since shield is instantiate in in Player, i need to add this before creating player object, else its not added into the containers
-    Shield.containers = (updatable, drawable)
+    PowerUp.containers = (updatable, drawable)
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
 
@@ -35,6 +35,7 @@ def main():
     # Game logic variables
     game_over = False
     shield = None
+    laser = None
 
     while True:
         for event in pygame.event.get():
@@ -59,14 +60,14 @@ def main():
             if player.shield_combo_streak == 3 and shield is None and player.shield is None:
                 x = random.randint(SHIELD_RADIUS, SCREEN_WIDTH - SHIELD_RADIUS)
                 y = random.randint(SHIELD_RADIUS, SCREEN_HEIGHT - SHIELD_RADIUS)
-                shield = Shield(x, y, SHIELD_RADIUS)
+                shield = PowerUp(x, y, SHIELD_RADIUS, "shield")
                 player.shield_combo_streak = 0
             
             # Check whether player gets the game shield. If so, remove game shield and player now has a shield
             if shield and shield.is_collided(player):
                 shield.kill()
                 shield = None
-                player.shield = Shield(player.position.x, player.position.y, SHIELD_RADIUS)
+                player.shield = PowerUp(player.position.x, player.position.y, SHIELD_RADIUS, "shield", True)
                 player.invincible = 5
             
             # Remove player shield when timer expires
@@ -88,7 +89,8 @@ def main():
                     
                     # 5s invincibility after respawn
                     player.invincible = 5
-                    
+
+                    player.streak = 0 
                     player.shield_combo_streak = 0
 
                 # Shield power up kill asteroids like bullets

@@ -4,8 +4,9 @@ from constants import PLAYER_RADIUS, PLAYER_TURN_SPEED, PLAYER_SPEED, PLAYER_SHO
 from bullets import Shot
 import math
 
-class Shield(CircleShape):
-    def __init__(self, x, y, radius):
+
+class PowerUp(CircleShape):
+    def __init__(self, x, y, radius, p_type="", with_player=False):
         super().__init__(x, y, radius)
         # I don't have to add position during instantiation, can add all these circles with Shield's current position
         self.dotted_circles = [pygame.Vector2(math.cos(math.radians(30)*i), math.sin(math.radians(30)*i)) * self.radius for i in range(0, 12)]
@@ -14,7 +15,8 @@ class Shield(CircleShape):
         #     for i in range(12)
         # ]
         self.rotation_angle = 0
-
+        self.p_type = p_type
+        self.with_player = with_player
     # def draw(self, screen):
     #     for vec in self.base_vectors:
     #         rotated_vec = vec.rotate(self.rotation_angle)
@@ -28,7 +30,12 @@ class Shield(CircleShape):
             # all these dotted circles should always be relative to the shield's current position
             rotated_position = self.position + rotated_circle
             pygame.draw.circle(screen, color="white", center=rotated_position, radius=2, width=2)
-    
+
+            power_type = pygame.font.Font(None, 40).render(self.p_type[0].upper(), True, "white")
+            if not self.with_player:
+                if self.p_type == "shield":
+                    screen.blit(power_type, (self.position.x - 10, self.position.y - 10))
+
     def update(self, dt):
         self.rotation_angle += 30*dt
 
