@@ -57,6 +57,9 @@ class Player(CircleShape):
         self.laser_combo_streak = 0
         self.laser_power_up = False
         self.laser_timer = 0
+        self.max_speed = PLAYER_SPEED
+        self.speed = 0
+        self.w_accel = None
 
     def triangle(self):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -112,6 +115,14 @@ class Player(CircleShape):
     
     def update(self, dt):
         keys = pygame.key.get_pressed()
+        
+        if not keys[pygame.K_w] and not keys[pygame.K_s]:
+            self.dec_accel(dt)
+
+        if self.w_accel:
+            self.move(dt)
+        else:
+            self.move(-dt)
 
         if keys[pygame.K_a]:
             self.rotate(-dt)
@@ -120,20 +131,40 @@ class Player(CircleShape):
             self.rotate(dt)
 
         if keys[pygame.K_w]:
+            if self.w_accel is False:
+                self.dec_accel(dt*8)
+                return
+            self.inc_accel(dt)
             self.move(dt)
-            
+            self.w_accel = True
+
         if keys[pygame.K_s]:
+            if self.w_accel:
+                self.dec_accel(dt*8)
+                return
+            self.inc_accel(dt)
             self.move(-dt)
-        
+            self.w_accel = False
+
         if keys[pygame.K_SPACE]:
             self.shoot(dt)
 
-    
+    def inc_accel(self, dt):
+        if self.speed <= self.max_speed:
+            self.speed += dt*80
+
+    def dec_accel(self, dt):
+        if self.speed > 0:
+            self.speed -= dt*50
+        else:
+            self.speed = 0
+            self.w_accel = None
+
     def move(self, dt):
         # +ve rotate clockwise, vice versa
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
         # += forward works, but doesn't make it frame independent
-        self.position += forward * PLAYER_SPEED * dt
+        self.position += forward * self.speed * dt
 
         # player shield has to keep track of player position to always display correctly around player
         if self.shield is not None:

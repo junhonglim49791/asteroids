@@ -114,7 +114,8 @@ def main():
 
             # if player.laser_timer < 0 and player.laser_power_up:
             #     player.laser_power_up = False
-
+            
+            # Loop for power ups
             for ptype, cfg in powerup_defs.items():
                 if getattr(player, cfg["streak_name"]) == cfg["trigger_combo"] and game_powerups[cfg["game_attr"]] is None and not getattr(player, cfg["player_attr"]):
                         x = random.randint(SHIELD_RADIUS, SCREEN_WIDTH - SHIELD_RADIUS)
