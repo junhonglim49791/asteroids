@@ -1,11 +1,11 @@
 import pygame
-import sys
 import random
 from constants import *
 from player import Player, PowerUp
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from bullets import Shot
+from explosion import ExplosionCircles
 
 
 def main():
@@ -22,9 +22,11 @@ def main():
     PowerUp.containers = (updatable, drawable)
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
+    ExplosionCircles.containers = (updatable, drawable)
+
     asteroids = pygame.sprite.Group()
     Asteroid.containers = (asteroids, updatable, drawable)
-    
+
     AsteroidField.containers = updatable
     asteroid_field = AsteroidField()
 
@@ -35,37 +37,34 @@ def main():
     game_over = False
     # shield = None
     # laser = None
-    game_powerups = {
-        "shield": None,
-        "laser": None
-    }
-    
+    game_powerups = {"shield": None, "laser": None}
+
     # PowerUps dict
     powerup_defs = {
-        "shield":{
+        "shield": {
             "streak_name": "shield_combo_streak",
             "trigger_combo": SHIELD_TRIGGER_COMBO,
             "game_attr": "shield",
             "player_attr": "shield",
             "player_timer": "invincible",
-            "timer_default": SHIELD_TIMER
+            "timer_default": SHIELD_TIMER,
         },
-        "laser":{
+        "laser": {
             "streak_name": "laser_combo_streak",
             "trigger_combo": LASER_TRIGGER_COMBO,
             "game_attr": "laser",
             "player_attr": "laser_power_up",
             "player_timer": "laser_timer",
-            "timer_default": LASER_TIMER
-        }
+            "timer_default": LASER_TIMER,
+        },
     }
-        
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
 
-       # update current player state before refreshing the screen, for now might have no diff but this is standard practice
+        # update current player state before refreshing the screen, for now might have no diff but this is standard practice
         updatable.update(dt)
         screen.fill("black")
 
@@ -78,7 +77,7 @@ def main():
             # Doesn't work because Group.draw() in sprite module expects "image" attribute
             # drawable.draw(screen)
 
-            # Awards shield power up for player accuracy. 
+            # Awards shield power up for player accuracy.
             # shield is None prevent more than 1 shield in game but doesnt prevent shield to be generated when player in shield power up
             # player.shield is None make sure no shield can be generated when player reach shield combo streak during shield power up
             # if player.shield_combo_streak == 3 and shield is None and player.shield is None:
@@ -100,7 +99,7 @@ def main():
             #     shield = None
             #     player.shield = PowerUp(player.position.x, player.position.y, SHIELD_RADIUS, "shield", True)
             #     player.invincible = 5
-            
+
             # if laser and laser.is_collided(player):
             #     laser.kill()
             #     laser = None
@@ -114,30 +113,50 @@ def main():
 
             # if player.laser_timer < 0 and player.laser_power_up:
             #     player.laser_power_up = False
-            
+
             # Loop for power ups
             for ptype, cfg in powerup_defs.items():
-                if getattr(player, cfg["streak_name"]) == cfg["trigger_combo"] and game_powerups[cfg["game_attr"]] is None and not getattr(player, cfg["player_attr"]):
-                        x = random.randint(SHIELD_RADIUS, SCREEN_WIDTH - SHIELD_RADIUS)
-                        y = random.randint(SHIELD_RADIUS, SCREEN_HEIGHT - SHIELD_RADIUS)
-                        game_powerups[cfg["game_attr"]] = PowerUp(x, y, SHIELD_RADIUS, ptype)
-                        setattr(player, cfg["streak_name"], 0)
+                if (
+                    getattr(player, cfg["streak_name"]) == cfg["trigger_combo"]
+                    and game_powerups[cfg["game_attr"]] is None
+                    and not getattr(player, cfg["player_attr"])
+                ):
+                    x = random.randint(SHIELD_RADIUS, SCREEN_WIDTH - SHIELD_RADIUS)
+                    y = random.randint(SHIELD_RADIUS, SCREEN_HEIGHT - SHIELD_RADIUS)
+                    game_powerups[cfg["game_attr"]] = PowerUp(
+                        x, y, SHIELD_RADIUS, ptype
+                    )
+                    setattr(player, cfg["streak_name"], 0)
 
-                if game_powerups[cfg["game_attr"]] and game_powerups[cfg["game_attr"]].is_collided(player):
+                if game_powerups[cfg["game_attr"]] and game_powerups[
+                    cfg["game_attr"]
+                ].is_collided(player):
                     game_powerups[cfg["game_attr"]].kill()
                     game_powerups[cfg["game_attr"]] = None
                     if ptype == "shield":
-                        setattr(player, cfg["player_attr"], PowerUp(player.position.x, player.position.y, SHIELD_RADIUS, ptype, True))
+                        setattr(
+                            player,
+                            cfg["player_attr"],
+                            PowerUp(
+                                player.position.x,
+                                player.position.y,
+                                SHIELD_RADIUS,
+                                ptype,
+                                True,
+                            ),
+                        )
                         setattr(player, cfg["player_timer"], cfg["timer_default"])
                     elif ptype == "laser":
                         setattr(player, cfg["player_attr"], True)
                         setattr(player, cfg["player_timer"], cfg["timer_default"])
 
-                if getattr(player, cfg["player_timer"]) < 0 and getattr(player, cfg["player_attr"]):
+                if getattr(player, cfg["player_timer"]) < 0 and getattr(
+                    player, cfg["player_attr"]
+                ):
                     if ptype == "shield":
                         getattr(player, cfg["player_attr"]).kill()
                         setattr(player, cfg["player_attr"], None)
-                    elif ptype == "laser":  
+                    elif ptype == "laser":
                         setattr(player, cfg["player_attr"], False)
 
             for asteroid in asteroids:
@@ -147,15 +166,15 @@ def main():
                     player.life -= 1
                     if player.life < 0:
                         game_over = True
-                    
+
                     # Prevent player and asteroid always colliding
                     player.back_to_center()
                     asteroid.kill()
-                    
+
                     # 5s invincibility after respawn
                     player.invincible = 5
 
-                    player.streak = 0 
+                    player.streak = 0
                     player.shield_combo_streak = 0
                     player.laser_combo_streak = 0
 
@@ -164,12 +183,14 @@ def main():
                     asteroid.split()
                     player.score = max(player.score + 1, player.streak + player.score)
                     player.streak += 1
-                        
+
                 for bullet in bullets:
                     if asteroid.is_collided(bullet):
                         bullet.kill()
                         asteroid.split()
-                        player.score = max(player.score + 1, player.streak + player.score)
+                        player.score = max(
+                            player.score + 1, player.streak + player.score
+                        )
                         player.streak += 1
                         if player.shield_combo_streak < SHIELD_TRIGGER_COMBO:
                             player.shield_combo_streak += 1
@@ -177,10 +198,10 @@ def main():
                             player.laser_combo_streak += 1
                     elif bullet.is_out_of_bounds():
                         bullet.kill()
-                        player.streak = 0 
-                        player.shield_combo_streak = 0 
-                        player.laser_combo_streak = 0         
-        else:           
+                        player.streak = 0
+                        player.shield_combo_streak = 0
+                        player.laser_combo_streak = 0
+        else:
             player.show_highest_score(screen)
             keys = pygame.key.get_pressed()
             if keys[pygame.K_e]:
@@ -202,18 +223,13 @@ def main():
                 player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
                 game_over = False
 
-
-
         pygame.display.flip()
         delta_time = clock.tick(60)
         dt = delta_time / 1000
 
-        
     print("Starting Asteroids!")
-    print(
-        f"Screen width: {SCREEN_WIDTH}\n"
-        f"Screen height: {SCREEN_HEIGHT}"
-    )
+    print(f"Screen width: {SCREEN_WIDTH}\n" f"Screen height: {SCREEN_HEIGHT}")
+
 
 if __name__ == "__main__":
     main()
