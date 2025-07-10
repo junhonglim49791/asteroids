@@ -149,6 +149,7 @@ class Player(CircleShape):
         if not keys[pygame.K_w] and not keys[pygame.K_s]:
             self.dec_accel(dt)
 
+        # Use w_accel to check direction of accelerations to move accordingly
         if self.w_accel:
             self.move(dt)
         else:
