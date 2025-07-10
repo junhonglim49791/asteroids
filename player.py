@@ -140,6 +140,8 @@ class Player(CircleShape):
         self.rotation += PLAYER_TURN_SPEED * dt
 
     def update(self, dt):
+        self.invincible -= dt
+        self.laser_timer -= dt
         keys = pygame.key.get_pressed()
 
         if not keys[pygame.K_w] and not keys[pygame.K_s]:
