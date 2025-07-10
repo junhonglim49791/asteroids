@@ -8,9 +8,11 @@ from explosion import ExplosionCircles
 class Asteroid(CircleShape):
     def __init__(self, x, y, radius, choice):
         super().__init__(x, y, radius)
-        # I found that if generate radius length by a long r long r short r pattern, the circle will not looks very sharp
+        # I found that if generate radius length by a long r long r short r pattern, the circle will not looks very sharp.
         self.asteroid_styles = [
             [
+                # Each lumpy circle is formed by 10 points. Using i % 3 != 2, for every 3 radius, the first 2 would be longer than the 3rd.
+                #  Example: when i = 0 i = 1, these 2 radius would range from 0.8 to 1. Where i = 2 the radius range from 0.5 to 0.7
                 (
                     random.uniform(self.radius * 0.8, self.radius * 1)
                     if i % 3 != 2
@@ -19,6 +21,7 @@ class Asteroid(CircleShape):
                 for i in range(0, 10)
             ],
             [
+                # Using i % 4 != 3, for every 4 radius, the first 3 would be longer than the 4th
                 (
                     random.uniform(self.radius * 0.8, self.radius * 1)
                     if i % 4 != 3
@@ -27,6 +30,7 @@ class Asteroid(CircleShape):
                 for i in range(0, 10)
             ],
             [
+                # # Using i % 5 != 4, for every 5 radius, the first 4 would be longer than the 5th
                 (
                     random.uniform(self.radius * 0.8, self.radius * 1)
                     if i % 5 != 4
@@ -35,6 +39,7 @@ class Asteroid(CircleShape):
                 for i in range(0, 10)
             ],
         ]
+        # To choose 1 out of the 3 patterns in asteroid_styles
         self.index = choice
 
     def lumpy_circle(self):
@@ -45,7 +50,6 @@ class Asteroid(CircleShape):
         ]
 
     def draw(self, screen):
-        # pygame.draw.circle(screen, color="white", center=self.position, radius=self.radius, width=2)
         pygame.draw.polygon(screen, color="white", points=self.lumpy_circle(), width=2)
 
     def update(self, dt):

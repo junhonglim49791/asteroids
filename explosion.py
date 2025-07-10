@@ -2,7 +2,7 @@ import pygame
 from constants import EXPLOSION_SPEED, EXPLOSION_TIMER
 
 
-# Draw the 4 circles which move in fixed angles in a period of time
+# Draw the 4 circles which move in fixed angles in a period of time for explosion effect
 class ExplosionCircles(pygame.sprite.Sprite):
     def __init__(self, x, y):
 
@@ -13,7 +13,7 @@ class ExplosionCircles(pygame.sprite.Sprite):
 
         self.asteroid_position = pygame.Vector2(x, y)
         self.timer = EXPLOSION_TIMER
-        # 4 angles
+        # Fixed relative angles because feel like randonmess doens't look that good imo
         self.directions = [
             pygame.Vector2(0, 1).rotate(45),
             pygame.Vector2(0, 1).rotate(-45),
@@ -37,5 +37,5 @@ class ExplosionCircles(pygame.sprite.Sprite):
         self.timer -= dt
         if self.timer < 0:
             self.kill()
-        # Update explosion radius so that 4 circles will keep moving on screen
+        # Update explosion radius so that 4 circles will be moving out on screen
         self.explosion_radius += EXPLOSION_SPEED * dt
