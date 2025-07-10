@@ -8,7 +8,7 @@ import math
 class PowerUp(CircleShape):
     def __init__(self, x, y, radius, p_type="", with_player=False):
         super().__init__(x, y, radius)
-        # I don't have to add position during instantiation, can add all these circles with Shield's current position
+        # Relative vectors to be added with either player's or the powerups' position
         self.dotted_circles = [
             pygame.Vector2(
                 math.cos(math.radians(30) * i), math.sin(math.radians(30) * i)
@@ -16,25 +16,16 @@ class PowerUp(CircleShape):
             * self.radius
             for i in range(0, 12)
         ]
-        # self.base_vectors = [
-        #     pygame.Vector2(0, self.radius).rotate(i * 360 / 12)  # 12 dots
-        #     for i in range(12)
-        # ]
+        # To rotate the powerups
         self.rotation_angle = 0
         self.p_type = p_type
         self.with_player = with_player
 
-    # def draw(self, screen):
-    #     for vec in self.base_vectors:
-    #         rotated_vec = vec.rotate(self.rotation_angle)
-    #         pos = self.position + rotated_vec
-    #         pygame.draw.circle(screen, color="white", center=pos, radius=2, width=2)
-
     def draw(self, screen):
         for circle in self.dotted_circles:
-            # if i passed in rotated_circle to draw.circle(), the circle is rotated relative to origin (top left corner of the game window)
+            # if i passed in rotated_circle to draw.circle() without adding the position, the circle is rotated relative to origin (top left corner of the game
+            # window)
             rotated_circle = circle.rotate(self.rotation_angle)
-            # all these dotted circles should always be relative to the shield's current position
             rotated_position = self.position + rotated_circle
             pygame.draw.circle(
                 screen, color="white", center=rotated_position, radius=2, width=2
@@ -81,7 +72,7 @@ class Player(CircleShape):
         b = self.position - forward * self.radius - right
         c = self.position - forward * self.radius + right
 
-        # Draw inner triangle after respawn
+        # Draw inner triangle after respawn to show player's invincibility
         if self.invincible > 0:
             d = self.position + right
             e = self.position - right
@@ -114,17 +105,11 @@ class Player(CircleShape):
         screen.blit(shield_combo, (5, 110))
         screen.blit(laser_combo, (5, 145))
 
-        # self.shield.draw(screen)
-
         pygame.draw.polygon(screen, color="white", points=self.triangle()[0], width=2)
         if self.invincible > 0 and self.shield is None:
             pygame.draw.polygon(
                 screen, color="white", points=self.triangle()[1], width=2
             )
-
-        # Check real shape and triangle shape difference
-        # pygame.draw.circle(screen, color="white", center=self.position, radius=self.radius, width=2)
-        # pygame.draw.polygon(screen, color="white", points=self.triangle()[0], width=2)
 
     def show_highest_score(self, screen):
         highest_score = pygame.font.Font(None, 80).render(
@@ -138,6 +123,23 @@ class Player(CircleShape):
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
+
+    """Acceleration
+    Player player moves in a direction (W/S) it accelerates, but when the opposition direction key is pressed, player starts decelerate until 0 and pick up speed
+    again. In this case, when player manually decelerates its faster than letting the player object to decelerate naturally (no direction keys are pressed) for more 
+    control.
+    """
+
+    def inc_accel(self, dt):
+        if self.speed <= self.max_speed:
+            self.speed += dt * PLAYER_ACCELERATION
+
+    def dec_accel(self, dt):
+        if self.speed > 0:
+            self.speed -= dt * PLAYER_DECELERATION
+        else:
+            self.speed = 0
+            self.w_accel = None
 
     def update(self, dt):
         self.invincible -= dt
@@ -159,8 +161,9 @@ class Player(CircleShape):
             self.rotate(dt)
 
         if keys[pygame.K_w]:
+            # Check whether player is pressing S to accelerate, if so pressing W will decelerates
             if self.w_accel is False:
-                self.dec_accel(dt * 8)
+                self.dec_accel(dt * MANUAL_DECELERATION_MULTIPLIER)
                 return
             self.inc_accel(dt)
             self.move(dt)
@@ -168,7 +171,7 @@ class Player(CircleShape):
 
         if keys[pygame.K_s]:
             if self.w_accel:
-                self.dec_accel(dt * 8)
+                self.dec_accel(dt * MANUAL_DECELERATION_MULTIPLIER)
                 return
             self.inc_accel(dt)
             self.move(-dt)
@@ -177,33 +180,24 @@ class Player(CircleShape):
         if keys[pygame.K_SPACE]:
             self.shoot(dt)
 
-    def inc_accel(self, dt):
-        if self.speed <= self.max_speed:
-            self.speed += dt * 80
-
-    def dec_accel(self, dt):
-        if self.speed > 0:
-            self.speed -= dt * 50
-        else:
-            self.speed = 0
-            self.w_accel = None
-
     def move(self, dt):
         # +ve rotate clockwise, vice versa
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
-        # += forward works, but doesn't make it frame independent
+        # += forward only still works, but doesn't make it frame independent. self.speed is now a variable instead of constant for acceleration logic
         self.position += forward * self.speed * dt
 
         # player shield has to keep track of player position to always display correctly around player
         if self.shield is not None:
             self.shield.position = self.position
 
+    # For respawn purpose
     def back_to_center(self):
         self.position = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
     def shoot(self, dt):
         self.shoot_cooldown -= dt
 
+        # If player has laser power up, then no cooldown for shooting speed
         if self.shoot_cooldown > 0 and not self.laser_power_up:
             return
 
@@ -212,5 +206,4 @@ class Player(CircleShape):
             pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
         )
 
-        PLAYER_SHOOT_COOLDOWN = 0.3
         self.shoot_cooldown = PLAYER_SHOOT_COOLDOWN
