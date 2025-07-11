@@ -18,7 +18,7 @@ A small Python game inspired by the classic *Asteroids*. Built using Pygame.
 1. Clone the repository into your project folder:
 
    ```bash
-   git clone https://github.com/your-username/asteroid-game.git
+   [git clone https://github.com/your-username/asteroid-game.git](https://github.com/junhonglim49791/asteroids.git)
    ```
 2. (Optional) Create and activate a virtual environment:
     ```bash
