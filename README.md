@@ -20,7 +20,7 @@ A small Python game inspired by the classic *Asteroids*. Built using Pygame.
    ```bash
    git clone https://github.com/junhonglim49791/asteroids.git
    ```
-2. (Optional) Create and activate a virtual environment:
+2. Create and activate a virtual environment:
     ```bash
     python -m venv venv
     source venv/bin/activate
