@@ -5,7 +5,7 @@ A small Python game inspired by the classic *Asteroids*. Built using Pygame.
 
 ## 🎮 Gameplay Demo
 
-[▶ Watch on YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+[▶ Demo](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
 
 
 ## 🛠 Requirements
