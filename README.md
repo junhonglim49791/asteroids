@@ -44,14 +44,14 @@ I’ve expanded the original foundation with the following enhancements:
 
 ## 🚀 How to Run
 
-1. Clone the repository into your project folder:
+1. Clone the repository into your current directory:
 
    ```bash
    git clone https://github.com/junhonglim49791/asteroids.git
    ```
 2. Create and activate a virtual environment:
     ```bash
-    python -m venv venv
+    python3 -m venv venv
     source venv/bin/activate
     ```
 3. Install dependencies:
