@@ -1,7 +1,7 @@
 # <img src="bootdev-removebg-preview.png" alt="Asteroid Game Logo" width="40" style="margin-right: 5px;" /> Asteroids Game
 
 A small Python game inspired by the classic *Asteroids*. Built using Pygame, and extended from 
-*Build Asteroids using Python and Pygame*, a guided project from the learning platform **Boot.dev**
+*Build Asteroids using Python and Pygame*, a guided project from the learning platform **`Boot.dev`**
 
 ## 🧱 Original Guided Project Scope
 
@@ -33,11 +33,9 @@ I’ve expanded the original foundation with the following enhancements:
 - Introduced a shield power-up that destroys asteroids on contact  
 - Added a laser power-up that removes the shooting cooldown  
 
+## 🎥 Gameplay Demo
 
-## 🎮 Gameplay Demo
-
-[▶ Demo](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
-
+[![Watch the demo](https://img.youtube.com/vi/tTWmnWmyi64/hqdefault.jpg)](https://youtu.be/tTWmnWmyi64)
 
 ## 🛠 Requirements
 
@@ -64,4 +62,22 @@ I’ve expanded the original foundation with the following enhancements:
     ```bash
     python3 main.py
     ```
-    
+### 📝 Notes on Difficulty Settings
+
+If you'd like to tweak the game difficulty, you can adjust the following constants in the `constants.py` :
+
+- **`ASTEROID_SPAWN_RATE`**  
+  Controls how frequently asteroids appear.  
+  ⏱ *Lower values = faster spawn rate = harder*
+
+- **`SHOT_RADIUS`**  
+  Sets the size of the bullet.  
+  🎯 *Larger bullets = easy kills*
+
+- **`SHIELD_TRIGGER_COMBO`** or **`LASER_TRIGGER_COMBO`**  
+  Number of **consecutive hits without missing** required to unlock the relevant power-up.  
+  ⚡ *Lower value = easier to get*
+
+- **`SHIELD_TIMER`** or **`LASER_TIMER`**   
+  Duration that the power up remains active once triggered.  
+  ⏳ *Higher value = longer activation time*
